@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PhoneDeck</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f5f6f8;
+        --card: #ffffff;
+        --text: #15171a;
+        --muted: #667085;
+        --accent: #2563eb;
+        --danger: #dc2626;
+        --ok: #16a34a;
+        --border: #d9dde3;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0f1115;
+          --card: #181b21;
+          --text: #eef0f3;
+          --muted: #9aa3b2;
+          --accent: #6ea0ff;
+          --danger: #ff6b6b;
+          --ok: #4ade80;
+          --border: #2a2f38;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        font-family: system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        max-width: 480px;
+        margin-inline: auto;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin: 0 0 4px;
+      }
+      #status {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+      #status[data-state="on"] {
+        color: var(--ok);
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 16px;
+      }
+      #hint {
+        margin: 0 0 14px;
+        line-height: 1.4;
+      }
+      label {
+        display: block;
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 12px;
+        font: inherit;
+        font-size: 0.85rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+      }
+      button {
+        width: 100%;
+        padding: 14px;
+        margin-top: 12px;
+        font: inherit;
+        font-weight: 600;
+        border: 0;
+        border-radius: 12px;
+        background: var(--accent);
+        color: #fff;
+      }
+      button.danger {
+        background: var(--danger);
+      }
+      button.plain {
+        background: transparent;
+        color: var(--muted);
+        border: 1px solid var(--border);
+      }
+      .gauge + .gauge {
+        margin-top: 14px;
+      }
+      .gauge-head {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 600;
+      }
+      progress {
+        width: 100%;
+        height: 10px;
+        margin-top: 6px;
+      }
+      #log {
+        margin: 0;
+        font-size: 0.8rem;
+        color: var(--muted);
+        white-space: pre-wrap;
+        max-height: 8rem;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>PhoneDeck</h1>
+    <div id="status" data-state="off">Not connected</div>
+
+    <div class="card" id="service-row">
+      <p id="hint"></p>
+      <label for="link" id="link-label">Or paste the pairing link</label>
+      <input id="link" type="text" autocomplete="off" spellcheck="false" />
+      <button id="connect">Connect</button>
+    </div>
+
+    <div id="deck" hidden>
+      <div class="card">
+        <div class="gauge">
+          <div class="gauge-head"><span>CPU</span><span id="cpu-value">-</span></div>
+          <progress id="cpu-bar" max="100" value="0"></progress>
+        </div>
+        <div class="gauge">
+          <div class="gauge-head"><span>RAM</span><span id="ram-value">-</span></div>
+          <progress id="ram-bar" max="100" value="0"></progress>
+        </div>
+      </div>
+      <button id="lock" class="danger">Lock the computer</button>
+    </div>
+
+    <button id="disconnect" class="plain" hidden>Disconnect</button>
+
+    <div class="card"><pre id="log"></pre></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
