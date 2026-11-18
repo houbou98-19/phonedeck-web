@@ -1,5 +1,9 @@
 # PhoneDeck: the phone page
 
+> **Moved.** This repository is archived. The phone page, and the computer side, now live in one
+> repository: **https://github.com/houbou98-19/PhoneDeck**. The page is published from there at
+> https://houbou98-19.github.io/PhoneDeck/.
+
 The phone side of **PhoneDeck**, a way to use your phone as a wireless control panel for your
 computer over Bluetooth Low Energy (BLE): live CPU and RAM, and a button that locks the computer.
 
@@ -12,7 +16,7 @@ then on everything is encrypted (AES-GCM, with keys derived from the pairing key
 - Needs **Chrome on Android** (Web Bluetooth).
 - This site is static: no server code, no tracking, no data collected.
 - The pairing key works once, and only for a short time (60 seconds by default).
-- The computer side (Windows, Python) is not published yet.
+- The computer side (Windows, Python) is in the PhoneDeck repository.
 
 ## The files
 
