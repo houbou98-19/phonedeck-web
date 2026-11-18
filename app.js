@@ -119,21 +119,75 @@ $("connect").addEventListener("click", async () => {
 
 $("disconnect").addEventListener("click", () => link.disconnect());
 
-// Every command button works the same way: send its data-action, report the result.
-for (const tile of document.querySelectorAll(".tile[data-action]")) {
-  tile.addEventListener("click", async () => {
-    const action = tile.dataset.action;
-    try {
-      const { status } = await link.request(Kind.COMMAND, action);
-      say(status === Status.OK ? `${tile.dataset.label}.` : `"${action}" failed (status ${status}).`);
-    } catch (error) {
-      say(`"${action}" failed: ${error.message}`);
+/** Send a command. Return true if the computer did it. A failure is shown, not thrown. */
+async function command(action) {
+  try {
+    const { status } = await link.request(Kind.COMMAND, action);
+    if (status === Status.OK) return true;
+    say(`"${action}" failed (status ${status}).`);
+  } catch (error) {
+    say(`"${action}" failed: ${error.message}`);
+  }
+  return false;
+}
+
+// Every command button works the same way: send its data-action, and say what it did.
+for (const button of document.querySelectorAll("[data-action]")) {
+  button.addEventListener("click", async () => {
+    if ((await command(button.dataset.action)) && button.dataset.label) {
+      say(`${button.dataset.label}.`);
     }
   });
 }
 
+// --- The Spotify card ---
+
+/** Ask the computer whether Spotify runs. */
+async function spotifyRuns() {
+  const { status, data } = await link.request(Kind.QUERY, "spotify");
+  if (status !== Status.OK) throw new Error(`spotify: status ${status}`);
+  return data[0] === 1;
+}
+
+function openSpotify(open) {
+  $("spotify").dataset.open = String(open);
+  $("spotify-media").hidden = !open;
+}
+
+/** After starting Spotify, wait for it to come up (it takes a few seconds), up to 15 seconds. */
+async function waitForSpotify() {
+  for (let attempt = 0; attempt < 15; attempt++) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (await spotifyRuns()) return true;
+  }
+  return false;
+}
+
+$("spotify-main").addEventListener("click", async () => {
+  if ($("spotify").dataset.open === "true") return openSpotify(false);
+  try {
+    if (await spotifyRuns()) return openSpotify(true);
+    say("Starting Spotify...");
+    if (!(await command("spotify"))) return;
+    if (await waitForSpotify()) {
+      $("message").textContent = "";
+      openSpotify(true);
+    } else {
+      say("Spotify did not come up. Is it installed?");
+    }
+  } catch (error) {
+    say(`Spotify: ${error.message}`);
+  }
+});
+
+// A tap anywhere else closes the card.
+document.addEventListener("click", (event) => {
+  if (!$("spotify").contains(event.target)) openSpotify(false);
+});
+
 link.onDisconnect = () => {
   stopRefreshing();
+  openSpotify(false);
   setConnected(false);
   showHint();
   say("Disconnected.");
