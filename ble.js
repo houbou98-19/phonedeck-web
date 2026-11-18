@@ -143,6 +143,7 @@ export class PhoneDeckLink {
   // --- what comes from the computer ---
 
   #handleNotification(view) {
+    if (this.#session === null) return; // the link has been closed and forgotten
     // The DataView from Web Bluetooth may be a window into a bigger buffer, so take a copy.
     const packet = new Uint8Array(view.buffer, view.byteOffset, view.byteLength).slice();
 
@@ -162,6 +163,7 @@ export class PhoneDeckLink {
   }
 
   async #handleData(packet) {
+    if (this.#session === null) return; // the link was closed while this was waiting its turn
     try {
       const message = await this.#session.open(packet);
       if (message.kind !== Kind.RESPONSE) return;
@@ -195,5 +197,19 @@ export class PhoneDeckLink {
       this.#settle(requestId, (pending) => pending.reject(new Error("Disconnected")));
     }
     this.onDisconnect();
+    this.#forgetComputer();
+  }
+
+  /**
+   * Make the browser forget the computer, so that the next time needs a new scan of the QR code
+   * and a new choice in the list. (The pairing key is already used up and cannot work again, but
+   * the browser would otherwise keep its permission to use this device.)
+   */
+  #forgetComputer() {
+    const device = this.#device;
+    this.#device = null;
+    this.#session = null;
+    // forget() is in Chrome 101 and later. In an older one there is nothing to forget.
+    device?.forget?.().catch(() => {});
   }
 }
